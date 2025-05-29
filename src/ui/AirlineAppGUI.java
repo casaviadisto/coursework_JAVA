@@ -11,10 +11,13 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.nio.file.Files;
 import java.util.List;
 
 public class AirlineAppGUI extends Application {
@@ -239,24 +242,43 @@ public class AirlineAppGUI extends Application {
             card.setPadding(new Insets(10));
             card.setStyle("-fx-border-color: gray; -fx-border-radius: 5; -fx-background-color: #f9f9f9;");
 
-            // ЗОБРАЖЕННЯ
             if (plane.getImagePath() != null) {
                 try {
-                    ImageView imageView = new ImageView(new Image(new FileInputStream(plane.getImagePath())));
+                    Image image = new Image(new FileInputStream(plane.getImagePath()));
+                    ImageView imageView = new ImageView(image);
                     imageView.setFitWidth(180);
                     imageView.setPreserveRatio(true);
+
+                    imageView.setOnMouseClicked(e -> {
+                        try {
+                            Stage imageStage = new Stage();
+                            ImageView fullImage = new ImageView(new Image(new FileInputStream(plane.getImagePath())));
+                            fullImage.setPreserveRatio(true);
+                            fullImage.setFitWidth(800);
+                            StackPane pane = new StackPane(fullImage);
+                            pane.setPadding(new Insets(10));
+                            imageStage.setScene(new Scene(pane));
+                            imageStage.setTitle(plane.getModel());
+                            imageStage.show();
+                        } catch (FileNotFoundException ex) {
+                            showError("Не вдалося відкрити зображення.");
+                        }
+                    });
+
                     card.getChildren().add(imageView);
                 } catch (FileNotFoundException e) {
-                    System.out.println("Файл зображення не знайдено: " + plane.getImagePath());
+                    System.out.println("Зображення не знайдено: " + plane.getImagePath());
                 }
             }
 
-            Label title = new Label(plane.getModel());
-            Label type = new Label("Тип: " + plane.getType());
-            Label capacity = new Label("Пасажири: " + plane.getCapacity());
-            Label cargo = new Label("Вантаж: " + plane.getCargoCapacity() + " т");
-            Label range = new Label("Дальність: " + plane.getRange() + " км");
-            Label fuel = new Label("Пальне: " + plane.getFuelConsumption() + " л/год");
+            card.getChildren().addAll(
+                    new Label(plane.getModel()),
+                    new Label("Тип: " + plane.getType()),
+                    new Label("Пасажири: " + plane.getCapacity()),
+                    new Label("Вантаж: " + plane.getCargoCapacity() + " т"),
+                    new Label("Дальність: " + plane.getRange() + " км"),
+                    new Label("Пальне: " + plane.getFuelConsumption() + " л/год")
+            );
 
             Button editBtn = new Button("✏ Редагувати");
             Button deleteBtn = new Button("🗑 Видалити");
@@ -266,8 +288,7 @@ public class AirlineAppGUI extends Application {
                 updatePlaneTiles();
             });
 
-            HBox buttons = new HBox(5, editBtn, deleteBtn);
-            card.getChildren().addAll(title, type, capacity, cargo, range, fuel, buttons);
+            card.getChildren().add(new HBox(5, editBtn, deleteBtn));
             planeTiles.getChildren().add(card);
         }
 
@@ -299,6 +320,8 @@ public class AirlineAppGUI extends Application {
         TextField cargoField = new TextField();
         TextField rangeField = new TextField();
         TextField fuelField = new TextField();
+        TextField imagePathField = new TextField();
+        Button browseImageBtn = new Button("Огляд...");
         ComboBox<String> typeBox = new ComboBox<>(FXCollections.observableArrayList(PlaneFactory.getAvailableTypes()));
         typeBox.getSelectionModel().selectFirst();
 
@@ -308,15 +331,48 @@ public class AirlineAppGUI extends Application {
             cargoField.setText(String.valueOf(editable.getCargoCapacity()));
             rangeField.setText(String.valueOf(editable.getRange()));
             fuelField.setText(String.valueOf(editable.getFuelConsumption()));
+            imagePathField.setText(editable.getImagePath());
             typeBox.getSelectionModel().select(editable.getType());
         }
 
-        grid.add(new Label("Тип:"), 0, 0); grid.add(typeBox, 1, 0);
-        grid.add(new Label("Модель:"), 0, 1); grid.add(modelField, 1, 1);
-        grid.add(new Label("Пасажирів:"), 0, 2); grid.add(capacityField, 1, 2);
-        grid.add(new Label("Вантаж (т):"), 0, 3); grid.add(cargoField, 1, 3);
-        grid.add(new Label("Дальність (км):"), 0, 4); grid.add(rangeField, 1, 4);
-        grid.add(new Label("Пальне (л/год):"), 0, 5); grid.add(fuelField, 1, 5);
+        browseImageBtn.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Вибір зображення");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Зображення", "*.png", "*.jpg", "*.jpeg", "*.gif"));
+            File selectedFile = fileChooser.showOpenDialog(dialog.getOwner());
+            if (selectedFile != null) {
+                try {
+                    File imagesDir = new File("images");
+                    if (!imagesDir.exists()) imagesDir.mkdirs();
+
+                    String fileName = selectedFile.getName();
+                    File destFile = new File(imagesDir, fileName);
+                    if (!destFile.exists()) {
+                        Files.copy(selectedFile.toPath(), destFile.toPath());
+                    }
+
+                    imagePathField.setText("images/" + fileName);
+
+                } catch (Exception ex) {
+                    showError("Помилка при копіюванні зображення: " + ex.getMessage());
+                }
+            }
+        });
+
+        grid.add(new Label("Тип:"), 0, 0);
+        grid.add(typeBox, 1, 0);
+        grid.add(new Label("Модель:"), 0, 1);
+        grid.add(modelField, 1, 1);
+        grid.add(new Label("Пасажирів:"), 0, 2);
+        grid.add(capacityField, 1, 2);
+        grid.add(new Label("Вантаж (т):"), 0, 3);
+        grid.add(cargoField, 1, 3);
+        grid.add(new Label("Дальність (км):"), 0, 4);
+        grid.add(rangeField, 1, 4);
+        grid.add(new Label("Пальне (л/год):"), 0, 5);
+        grid.add(fuelField, 1, 5);
+        grid.add(new Label("Зображення:"), 0, 6);
+        grid.add(new HBox(5, imagePathField, browseImageBtn), 1, 6);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -330,7 +386,11 @@ public class AirlineAppGUI extends Application {
                     double cargo = Double.parseDouble(cargoField.getText());
                     int range = Integer.parseInt(rangeField.getText());
                     double fuel = Double.parseDouble(fuelField.getText());
-                    return PlaneFactory.createPlane(type.toLowerCase(), model, capacity, cargo, range, fuel);
+
+                    Plane plane = PlaneFactory.createPlane(type.toLowerCase(), model, capacity, cargo, range, fuel);
+                    plane.setImagePath(imagePathField.getText().trim());
+                    return plane;
+
                 } catch (Exception e) {
                     showError("Помилка введення: " + e.getMessage());
                 }
@@ -339,9 +399,19 @@ public class AirlineAppGUI extends Application {
         });
 
         dialog.showAndWait().ifPresent(plane -> {
-            if (editable != null) airline.removePlane(editable.getModel());
-            airline.addPlane(plane);
+            if (editable != null) {
+                editable.setImagePath(plane.getImagePath());
+                editable.setModel(plane.getModel());
+                editable.setCargoCapacity(plane.getCargoCapacity());
+                editable.setCapacity(plane.getCapacity());
+                editable.setRange(plane.getRange());
+                editable.setFuelConsumption(plane.getFuelConsumption());
+            } else {
+                airline.addPlane(plane);
+            }
+            setupFilterPanel();
             updatePlaneTiles();
+
         });
     }
 
@@ -354,3 +424,4 @@ public class AirlineAppGUI extends Application {
         launch(args);
     }
 }
+

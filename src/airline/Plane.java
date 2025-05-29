@@ -8,6 +8,26 @@ public abstract class Plane {
     protected double fuelConsumption;
     protected String imagePath;
 
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public void setCargoCapacity(double cargoCapacity) {
+        this.cargoCapacity = cargoCapacity;
+    }
+
+    public void setRange(int range) {
+        this.range = range;
+    }
+
+    public void setFuelConsumption(double fuelConsumption) {
+        this.fuelConsumption = fuelConsumption;
+    }
+
     public Plane(String model, int capacity, double cargoCapacity, int range, double fuelConsumption) {
         this.model = model;
         this.capacity = capacity;
