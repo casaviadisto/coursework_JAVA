@@ -19,7 +19,6 @@ public class AirlineAppGUI extends Application {
     private final FlowPane planeTiles = new FlowPane(10, 10);
     private final VBox filtersBox = new VBox(10);
 
-    // Фільтри і сортування
     private TextField searchField;
     private Slider minCapSlider, maxCapSlider;
     private Slider minCargoSlider, maxCargoSlider;
@@ -34,21 +33,34 @@ public class AirlineAppGUI extends Application {
         seedPlanes();
 
         planeTiles.setPadding(new Insets(10));
-        planeTiles.setPrefWrapLength(800);
 
         filtersBox.setPadding(new Insets(10));
         filtersBox.setPrefWidth(500);
         setupFilterPanel();
-        updatePlaneTiles();
+
+        ScrollPane filtersScroll = new ScrollPane(filtersBox);
+        filtersScroll.setFitToWidth(true);
+        filtersScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+        ScrollPane centerScroll = new ScrollPane(planeTiles);
+        centerScroll.setFitToWidth(true);
 
         BorderPane root = new BorderPane();
-        root.setCenter(new ScrollPane(planeTiles));
-        root.setRight(filtersBox);
+        root.setCenter(centerScroll);
+        root.setRight(filtersScroll);
 
         Scene scene = new Scene(root, 1300, 600);
         primaryStage.setTitle("Авіакомпанія — GUI");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // Прив’язка ширини плиток до ширини вікна
+        root.widthProperty().addListener((obs, oldVal, newVal) -> {
+            double width = newVal.doubleValue();
+            planeTiles.setPrefWrapLength(width - filtersBox.getPrefWidth() - 50);
+        });
+
+        updatePlaneTiles();
     }
 
     private void seedPlanes() {
