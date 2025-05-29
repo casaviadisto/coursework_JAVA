@@ -6,6 +6,7 @@ public abstract class Plane {
     protected double cargoCapacity;
     protected int range;
     protected double fuelConsumption;
+    protected String imagePath;
 
     public Plane(String model, int capacity, double cargoCapacity, int range, double fuelConsumption) {
         this.model = model;
@@ -35,6 +36,14 @@ public abstract class Plane {
         return fuelConsumption;
     }
 
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
     public abstract String getType();
 
     @Override
@@ -43,6 +52,7 @@ public abstract class Plane {
                 " | Passengers: " + capacity +
                 ", Cargo: " + cargoCapacity + " tons" +
                 ", Range: " + range + " km" +
-                ", Fuel: " + fuelConsumption + " l/h";
+                ", Fuel: " + fuelConsumption + " l/h" +
+                ", Image: " + imagePath;
     }
 }

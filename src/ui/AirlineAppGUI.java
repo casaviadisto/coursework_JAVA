@@ -8,9 +8,13 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 public class AirlineAppGUI extends Application {
@@ -33,7 +37,6 @@ public class AirlineAppGUI extends Application {
         seedPlanes();
 
         planeTiles.setPadding(new Insets(10));
-
         filtersBox.setPadding(new Insets(10));
         filtersBox.setPrefWidth(500);
         setupFilterPanel();
@@ -54,7 +57,6 @@ public class AirlineAppGUI extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Прив’язка ширини плиток до ширини вікна
         root.widthProperty().addListener((obs, oldVal, newVal) -> {
             double width = newVal.doubleValue();
             planeTiles.setPrefWrapLength(width - filtersBox.getPrefWidth() - 50);
@@ -236,6 +238,19 @@ public class AirlineAppGUI extends Application {
             VBox card = new VBox(5);
             card.setPadding(new Insets(10));
             card.setStyle("-fx-border-color: gray; -fx-border-radius: 5; -fx-background-color: #f9f9f9;");
+
+            // ЗОБРАЖЕННЯ
+            if (plane.getImagePath() != null) {
+                try {
+                    ImageView imageView = new ImageView(new Image(new FileInputStream(plane.getImagePath())));
+                    imageView.setFitWidth(180);
+                    imageView.setPreserveRatio(true);
+                    card.getChildren().add(imageView);
+                } catch (FileNotFoundException e) {
+                    System.out.println("Файл зображення не знайдено: " + plane.getImagePath());
+                }
+            }
+
             Label title = new Label(plane.getModel());
             Label type = new Label("Тип: " + plane.getType());
             Label capacity = new Label("Пасажири: " + plane.getCapacity());

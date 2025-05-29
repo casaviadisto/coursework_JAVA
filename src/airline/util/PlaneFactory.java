@@ -9,14 +9,8 @@ import java.util.List;
 public class PlaneFactory {
 
     private static final List<String> availableTypes = List.of(
-            "Passenger",
-            "Cargo",
-            "Business Jet",
-            "Light Plane",
-            "Fighter",
-            "Bomber",
-            "Attack Aircraft",
-            "Interceptor"
+            "Passenger", "Cargo", "Business Jet", "Light Plane",
+            "Fighter", "Bomber", "Attack Aircraft", "Interceptor"
     );
 
     public static Plane createPlane(
@@ -24,7 +18,7 @@ public class PlaneFactory {
             int capacity, double cargoCapacity,
             int range, double fuelConsumption
     ) {
-        return switch (type.toLowerCase()) {
+        Plane plane = switch (type.toLowerCase()) {
             case "passenger" -> new PassengerPlane(model, capacity, cargoCapacity, range, fuelConsumption);
             case "cargo" -> new CargoPlane(model, cargoCapacity, range, fuelConsumption);
             case "business jet" -> new BusinessJet(model, capacity, cargoCapacity, range, fuelConsumption);
@@ -35,6 +29,12 @@ public class PlaneFactory {
             case "interceptor" -> new Interceptor(model, cargoCapacity, range, fuelConsumption);
             default -> throw new IllegalArgumentException("Невідомий тип літака: " + type);
         };
+
+        // Задаємо шлях до зображення (відносний)
+        String formatted = model.replace(" ", "_").replace("-", "_");
+        plane.setImagePath("images/" + formatted + ".jpg");
+
+        return plane;
     }
 
     public static List<String> getAvailableTypes() {
