@@ -20,9 +20,13 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.util.List;
 
+import db.DatabaseManager;
+
+
 public class AirlineAppGUI extends Application {
 
     private final Airline airline = new Airline();
+    private final DatabaseManager dbManager = new DatabaseManager();
     private final FlowPane planeTiles = new FlowPane(10, 10);
     private final VBox filtersBox = new VBox(10);
 
@@ -37,7 +41,14 @@ public class AirlineAppGUI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        seedPlanes();
+        airline.getPlanes().addAll(dbManager.getAllPlanes());
+        setupFilterPanel();
+        updatePlaneTiles();
+
+
+
+        System.out.println("У системі літаків: " + airline.getPlanes().size());
+
 
         planeTiles.setPadding(new Insets(10));
         filtersBox.setPadding(new Insets(10));
@@ -68,16 +79,16 @@ public class AirlineAppGUI extends Application {
         updatePlaneTiles();
     }
 
-    private void seedPlanes() {
-        airline.addPlane(PlaneFactory.createPlane("passenger", "Boeing 737", 160, 18.0, 3000, 2500));
-        airline.addPlane(PlaneFactory.createPlane("cargo", "Antonov An-124", 0, 150.0, 4800, 12000));
-        airline.addPlane(PlaneFactory.createPlane("business jet", "Gulfstream G650", 14, 3.5, 12000, 1200));
-        airline.addPlane(PlaneFactory.createPlane("light plane", "Cessna 172", 4, 0.5, 1200, 400));
-        airline.addPlane(PlaneFactory.createPlane("fighter", "F-22 Raptor", 1, 2.0, 3000, 5000));
-        airline.addPlane(PlaneFactory.createPlane("bomber", "B-2 Spirit", 2, 20.0, 11000, 8000));
-        airline.addPlane(PlaneFactory.createPlane("attack aircraft", "Su-25", 1, 2.5, 1850, 2500));
-        airline.addPlane(PlaneFactory.createPlane("interceptor", "MiG-25", 1, 3.0, 1450, 7500));
-    }
+//    private void seedPlanes() {
+//        airline.addPlane(PlaneFactory.createPlane("passenger", "Boeing 737", 160, 18.0, 3000, 2500));
+//        airline.addPlane(PlaneFactory.createPlane("cargo", "Antonov An-124", 0, 150.0, 4800, 12000));
+//        airline.addPlane(PlaneFactory.createPlane("business jet", "Gulfstream G650", 14, 3.5, 12000, 1200));
+//        airline.addPlane(PlaneFactory.createPlane("light plane", "Cessna 172", 4, 0.5, 1200, 400));
+//        airline.addPlane(PlaneFactory.createPlane("fighter", "F-22 Raptor", 1, 2.0, 3000, 5000));
+//        airline.addPlane(PlaneFactory.createPlane("bomber", "B-2 Spirit", 2, 20.0, 11000, 8000));
+//        airline.addPlane(PlaneFactory.createPlane("attack aircraft", "Su-25", 1, 2.5, 1850, 2500));
+//        airline.addPlane(PlaneFactory.createPlane("interceptor", "MiG-25", 1, 3.0, 1450, 7500));
+//    }
 
     private void setupFilterPanel() {
         filtersBox.getChildren().clear();
@@ -237,6 +248,8 @@ public class AirlineAppGUI extends Application {
                 })
                 .toList();
 
+        System.out.println("Фільтрованих літаків: " + planes.size());
+
         for (Plane plane : planes) {
             VBox card = new VBox(5);
             card.setPadding(new Insets(10));
@@ -285,6 +298,8 @@ public class AirlineAppGUI extends Application {
             editBtn.setOnAction(e -> showEditDialog(plane));
             deleteBtn.setOnAction(e -> {
                 airline.removePlane(plane.getModel());
+                dbManager.deletePlane(plane.getModel());
+
                 updatePlaneTiles();
             });
 
@@ -406,9 +421,13 @@ public class AirlineAppGUI extends Application {
                 editable.setCapacity(plane.getCapacity());
                 editable.setRange(plane.getRange());
                 editable.setFuelConsumption(plane.getFuelConsumption());
+
+                dbManager.updatePlane(editable);
             } else {
                 airline.addPlane(plane);
+                dbManager.addPlane(plane);
             }
+
             setupFilterPanel();
             updatePlaneTiles();
 
