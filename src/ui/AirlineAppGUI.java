@@ -175,6 +175,12 @@ public class AirlineAppGUI extends Application {
     }
 
     /**
+     * open window with CLI
+     */
+    private void openCLIWindow(Stage owner) {
+        CLIWindow.show(owner);    }
+
+    /**
      * Sets up the filter panel with all filter controls.
      * This includes search field, range filters for various parameters,
      * plane type checkboxes, and sorting controls.
@@ -185,7 +191,14 @@ public class AirlineAppGUI extends Application {
         // Search by name
         searchField = new TextField();
         searchField.setPromptText("Пошук по назві");
-        filtersBox.getChildren().add(searchField);
+        searchField.setPrefWidth(200);
+
+        Button cliButton = new Button("CLI");
+        cliButton.setOnAction(e -> openCLIWindow((Stage) cliButton.getScene().getWindow()));
+
+        HBox searchRow = new HBox(5, searchField, cliButton);
+
+        filtersBox.getChildren().add(searchRow);
 
         // Passengers filter
         filtersBox.getChildren().add(new Label("Пасажири:"));
