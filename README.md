@@ -17,28 +17,28 @@
 ## ПРИКЛАДИ ІНТЕРФЕЙСУ
 
 ### Головний екран без фільтрів
-![Головний екран](preview/gui_filters_off.png)
+![Головний екран](./preview/gui_filters_off.png)
 
 ### головний екран з фільтрами
-![Панель фільтрів](preview/gui_filters_on.png)
+![Панель фільтрів](./preview/gui_filters_on.png)
 
 ### Пошук за моделлю літака
-![Пошук](preview/gui_search.png)
+![Пошук](./preview/gui_search.png)
 
 ### Вікно додавання літака
-![Додавання літака](preview/add_window.png)
+![Додавання літака](./preview/add_window.png)
 
 ### Вікно редагування літака
-![Редагування літака](preview/edit_window.png)
+![Редагування літака](./preview/edit_window.png)
 
 ### Перегляд зображення літака у великому розмірі
-![Перегляд зображення](preview/show_image_window.png)
+![Перегляд зображення](./preview/show_image_window.png)
 
 ### Консольний режим (CLI) — стартове меню
-![CLI старт](preview/cli_start.png)
+![CLI старт](./preview/cli_start.png)
 
 ### Консольний режим — пошук літака
-![CLI пошук](preview/cli_search.png)
+![CLI пошук](./preview/cli_search.png)
 
 ---
 
