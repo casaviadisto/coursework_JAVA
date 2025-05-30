@@ -104,16 +104,19 @@ public class DatabaseManager {
         }
     }
 
-    public void deletePlane(int id) {
+    public boolean deletePlane(int id) {
         String sql = "DELETE FROM planes WHERE id = ?;";
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-            pstmt.executeUpdate();
+            int affected = pstmt.executeUpdate();
+            return affected > 0;
         } catch (SQLException e) {
             System.err.println("Помилка при видаленні літака: " + e.getMessage());
+            return false;
         }
     }
+
 
     public List<Plane> getAllPlanes() {
         List<Plane> list = new ArrayList<>();

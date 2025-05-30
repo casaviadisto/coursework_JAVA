@@ -117,14 +117,17 @@ public abstract class Plane {
 
     @Override
     public String toString() {
-        return "[" + getType() + "] " + model +
-                " | Пасажири: " + capacity +
-                ", Вантаж: " + cargoCapacity + " т" +
-                ", Дальність: " + range + " км" +
-                ", Пальне: " + fuelConsumption + " л/год" +
-                ", Крейс. швидк.: " + cruisingSpeed + " км/год" +
-                ", Макс. швидк.: " + maxSpeed + " км/год" +
-                ", Стеля: " + serviceCeiling + " м" +
-                ", Зображення: " + imagePath;
+        return String.format(
+                "[%s] %s\n" +
+                        "Пасажири: %d\n" +
+                        "Вантаж: %.2f т\n" +
+                        "Дальність: %.2f км\n" +
+                        "Пальне: %.2f л/год\n" +
+                        "Крейс. швидк.: %.2f км/год\n" +
+                        "Макс. швидк.: %.2f км/год\n" +
+                        "Стеля: %.2f м\n" +
+                        "Зображення: %s",
+                getType(), model, capacity, cargoCapacity, range, fuelConsumption, cruisingSpeed, maxSpeed, serviceCeiling, imagePath
+        );
     }
 }
