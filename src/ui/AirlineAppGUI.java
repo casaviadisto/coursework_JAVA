@@ -1,8 +1,8 @@
-// Файл: ui/AirlineAppGUI.java
 package ui;
 
 import airline.*;
 import airline.util.PlaneFactory;
+import db.DatabaseManager;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,8 +22,6 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-import db.DatabaseManager;
-
 /**
  * The main GUI application for managing an airline's fleet of planes.
  * This application allows users to view, filter, sort, add, edit, and delete planes.
@@ -32,7 +30,6 @@ import db.DatabaseManager;
 public class AirlineAppGUI extends Application {
 
     private final Airline airline = new Airline(new DatabaseManager());
-    private final DatabaseManager dbManager = new DatabaseManager();
     private final FlowPane planeTiles = new FlowPane(10, 10);
     private final VBox filtersBox = new VBox(10);
 
@@ -58,11 +55,8 @@ public class AirlineAppGUI extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
-        airline.getPlanes().addAll(dbManager.getAllPlanes());
         setupFilterPanel();
         updatePlaneTiles();
-
-        System.out.println("У системі літаків: " + airline.getPlanes().size());
 
         planeTiles.setPadding(new Insets(10));
         filtersBox.setPadding(new Insets(10));
@@ -92,8 +86,6 @@ public class AirlineAppGUI extends Application {
 
     /**
      * Updates the min and max value fields based on the currently selected plane types.
-     * This method calculates the minimum and maximum values for all filterable parameters
-     * considering only the planes of the selected types.
      */
     private void updateMinMaxFields() {
         updatingMinMax = true;
@@ -144,11 +136,6 @@ public class AirlineAppGUI extends Application {
         updatingMinMax = false;
     }
 
-    /**
-     * Creates a text formatter filter that allows only double values.
-     *
-     * @return the UnaryOperator for text formatter changes
-     */
     private UnaryOperator<TextFormatter.Change> createDoubleFilter() {
         return change -> {
             String newText = change.getControlNewText();
@@ -159,11 +146,6 @@ public class AirlineAppGUI extends Application {
         };
     }
 
-    /**
-     * Creates a text formatter filter that allows only integer values.
-     *
-     * @return the UnaryOperator for text formatter changes
-     */
     private UnaryOperator<TextFormatter.Change> createIntegerFilter() {
         return change -> {
             String newText = change.getControlNewText();
@@ -174,16 +156,12 @@ public class AirlineAppGUI extends Application {
         };
     }
 
-    /**
-     * open window with CLI
-     */
     private void openCLIWindow(Stage owner) {
-        CLIWindow.show(owner);    }
+        CLIWindow.show(owner);
+    }
 
     /**
      * Sets up the filter panel with all filter controls.
-     * This includes search field, range filters for various parameters,
-     * plane type checkboxes, and sorting controls.
      */
     private void setupFilterPanel() {
         filtersBox.getChildren().clear();
@@ -197,7 +175,6 @@ public class AirlineAppGUI extends Application {
         cliButton.setOnAction(e -> openCLIWindow((Stage) cliButton.getScene().getWindow()));
 
         HBox searchRow = new HBox(5, searchField, cliButton);
-
         filtersBox.getChildren().add(searchRow);
 
         // Passengers filter
@@ -376,7 +353,7 @@ public class AirlineAppGUI extends Application {
         sortParam.valueProperty().addListener((obs, o, n) -> filter.run());
         sortOrder.valueProperty().addListener((obs, o, n) -> filter.run());
 
-        // Type checkboxes listeners - update min-max when changed
+        // Type checkboxes listeners
         typeCheckboxes.forEach(cb -> cb.selectedProperty().addListener((obs, o, n) -> {
             updateMinMaxFields();
             filter.run();
@@ -385,7 +362,6 @@ public class AirlineAppGUI extends Application {
 
     /**
      * Updates the display of plane tiles based on current filters and sorting.
-     * This method applies all active filters, sorts the planes, and updates the UI.
      */
     private void updatePlaneTiles() {
         planeTiles.getChildren().clear();
@@ -439,8 +415,6 @@ public class AirlineAppGUI extends Application {
                 })
                 .toList();
 
-        System.out.println("Фільтрованих літаків: " + planes.size());
-
         for (Plane plane : planes) {
             VBox card = new VBox(5);
             card.setPadding(new Insets(10));
@@ -492,7 +466,6 @@ public class AirlineAppGUI extends Application {
             editBtn.setOnAction(e -> showEditDialog(plane));
             deleteBtn.setOnAction(e -> {
                 airline.removePlane(plane.getId());
-                dbManager.deletePlane(plane.getId());
                 updateMinMaxFields();
                 updatePlaneTiles();
             });
@@ -509,11 +482,6 @@ public class AirlineAppGUI extends Application {
 
     /**
      * Parses a text field value to the specified type.
-     *
-     * @param <T> the type of the default value
-     * @param field the text field to parse
-     * @param defaultValue the default value to return if parsing fails or field is empty
-     * @return the parsed value or default value
      */
     @SuppressWarnings("unchecked")
     private <T> T parseField(TextField field, T defaultValue) {
@@ -540,8 +508,6 @@ public class AirlineAppGUI extends Application {
 
     /**
      * Shows the dialog for editing an existing plane.
-     *
-     * @param editable the plane to edit
      */
     private void showEditDialog(Plane editable) {
         showPlaneDialog(editable);
@@ -549,8 +515,6 @@ public class AirlineAppGUI extends Application {
 
     /**
      * Shows the plane dialog for adding or editing a plane.
-     *
-     * @param editable the plane to edit, or null to add a new plane
      */
     private void showPlaneDialog(Plane editable) {
         Dialog<Plane> dialog = new Dialog<>();
@@ -676,23 +640,9 @@ public class AirlineAppGUI extends Application {
 
         dialog.showAndWait().ifPresent(plane -> {
             if (editable != null) {
-                // Update existing plane
-                editable.setModel(plane.getModel());
-                editable.setType(plane.getType());
-                editable.setCapacity(plane.getCapacity());
-                editable.setCargoCapacity(plane.getCargoCapacity());
-                editable.setRange(plane.getRange());
-                editable.setFuelConsumption(plane.getFuelConsumption());
-                editable.setCruisingSpeed(plane.getCruisingSpeed());
-                editable.setMaxSpeed(plane.getMaxSpeed());
-                editable.setServiceCeiling(plane.getServiceCeiling());
-                editable.setImagePath(plane.getImagePath());
-
-                dbManager.updatePlane(editable);
+                airline.updatePlane(plane);
             } else {
-                // Add new plane
                 airline.addPlane(plane);
-                dbManager.addPlane(plane);
             }
 
             updateMinMaxFields();
@@ -702,8 +652,6 @@ public class AirlineAppGUI extends Application {
 
     /**
      * Shows an error message dialog.
-     *
-     * @param msg the error message to display
      */
     private void showError(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
@@ -712,8 +660,6 @@ public class AirlineAppGUI extends Application {
 
     /**
      * The main method to launch the application.
-     *
-     * @param args command line arguments
      */
     public static void main(String[] args) {
         launch(args);

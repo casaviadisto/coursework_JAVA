@@ -7,17 +7,30 @@ import db.DatabaseManager;
 import java.io.PrintStream;
 import java.util.*;
 
+/**
+ * Command-line interface for managing an airline's fleet of planes.
+ * Provides functionality for adding, editing, removing, listing, sorting, and searching planes.
+ */
 public class AirlineCLI {
     private final Airline airline;
     private final Scanner scanner;
     private final PrintStream printOut;
 
+    /**
+     * Constructs the CLI with input and output streams.
+     *
+     * @param scanner  the input scanner for reading user input
+     * @param printOut the output stream for writing output
+     */
     public AirlineCLI(Scanner scanner, PrintStream printOut) {
         this.airline = new Airline(new DatabaseManager());
         this.scanner = scanner;
         this.printOut = printOut;
     }
 
+    /**
+     * Runs the main CLI loop, handling user input and executing commands.
+     */
     public void run() {
         boolean running = true;
         while (running) {
@@ -36,12 +49,15 @@ public class AirlineCLI {
         }
     }
 
+    /**
+     * Prints the main menu with available options.
+     */
     private void printMenu() {
         printOut.println("""
                 \n=== Меню ===
                 1. Додати літак
-                2. Видалити літак (по назві)
-                3. Редагувати літак (по назві)
+                2. Видалити літак
+                3. Редагувати літак
                 4. Вивести всі літаки
                 5. Пошук літака
                 6. Сортування літаків
@@ -51,7 +67,9 @@ public class AirlineCLI {
     }
 
     /**
-     * Вивід даних у вигляді таблиці
+     * Displays a formatted table of planes.
+     *
+     * @param planes the list of planes to display
      */
     private void printPlaneTable(List<Plane> planes) {
         if (planes == null || planes.isEmpty()) {
@@ -83,6 +101,9 @@ public class AirlineCLI {
         printOut.println(line);
     }
 
+    /**
+     * Adds a new plane to the airline based on user input.
+     */
     private void addPlane() {
         try {
             List<String> availableTypes = PlaneFactory.getAvailableTypes();
@@ -135,14 +156,17 @@ public class AirlineCLI {
             );
 
             airline.addPlane(plane);
-            printOut.println("✅ Літак додано.");
+            printOut.println("Літак додано.");
         } catch (NumberFormatException e) {
-            printOut.println("❌ Некоректне числове значення. Спробуйте ще раз.");
+            printOut.println("Некоректне числове значення. Спробуйте ще раз.");
         } catch (IllegalArgumentException e) {
-            printOut.println("❌ Помилка при створенні літака: " + e.getMessage());
+            printOut.println("Помилка при створенні літака: " + e.getMessage());
         }
     }
 
+    /**
+     * Removes a plane from the airline by model name.
+     */
     private void removePlane() {
         printOut.print("Введіть назву (модель) літака для видалення: ");
         String model = scanner.nextLine().trim();
@@ -165,6 +189,10 @@ public class AirlineCLI {
         }
     }
 
+    /**
+     * Edits the attributes of an existing plane.
+     * Users can leave fields empty to keep current values.
+     */
     private void editPlane() {
         try {
             printOut.print("Введіть модель літака для редагування: ");
@@ -236,17 +264,23 @@ public class AirlineCLI {
         }
     }
 
+    /**
+     * Lists all planes in the airline.
+     */
     private void listPlanes() {
         List<Plane> planes = airline.getPlanes();
         printOut.println("=== Список літаків ===");
         printPlaneTable(planes);
     }
 
+    /**
+     * Prompts the user to choose a search method: simple or advanced.
+     */
     private void searchPlane() {
         printOut.println("""
-            1. Пошук за частиною назви
-            2. Розширений пошук з фільтрами
-            """);
+                1. Пошук за частиною назви
+                2. Розширений пошук з фільтрами
+                """);
         printOut.print("Виберіть тип пошуку: ");
         String choice = scanner.nextLine();
         if (choice.equals("1")) {
@@ -258,6 +292,9 @@ public class AirlineCLI {
         }
     }
 
+    /**
+     * Performs a simple search of planes by part of the model name.
+     */
     private void simpleSearch() {
         printOut.print("Введіть частину назви для пошуку: ");
         String keyword = scanner.nextLine().toLowerCase();
@@ -274,6 +311,10 @@ public class AirlineCLI {
         }
     }
 
+
+    /**
+     * Performs an advanced search of planes using multiple filters and criteria.
+     */
     private void advancedSearch() {
         try {
             printOut.println("=== Розширений пошук з фільтрами ===");
@@ -341,10 +382,10 @@ public class AirlineCLI {
                         if (index >= 1 && index <= availableTypes.size()) {
                             selectedTypes.add(availableTypes.get(index - 1).toLowerCase());
                         } else {
-                            printOut.printf("⚠️ Індекс поза межами: %s (ігнорується)%n", token);
+                            printOut.printf("Індекс поза межами: %s (ігнорується)%n", token);
                         }
                     } catch (NumberFormatException e) {
-                        printOut.printf("⚠️ Некоректне значення: %s (ігнорується)%n", token);
+                        printOut.printf("Некоректне значення: %s (ігнорується)%n", token);
                     }
                 }
             }
@@ -379,18 +420,21 @@ public class AirlineCLI {
         }
     }
 
+    /**
+     * Sorts planes based on a chosen attribute and order (ascending or descending).
+     */
     private void sortPlanes() {
         printOut.println("""
-        Сортувати за:
-        1. Модель
-        2. Пасажири
-        3. Вантажопідйомність
-        4. Дальність польоту
-        5. Споживання пального
-        6. Крейсерська швидкість
-        7. Максимальна швидкість
-        8. Стеля
-        """);
+                Сортувати за:
+                1. Модель
+                2. Пасажири
+                3. Вантажопідйомність
+                4. Дальність польоту
+                5. Споживання пального
+                6. Крейсерська швидкість
+                7. Максимальна швидкість
+                8. Стеля
+                """);
         printOut.print("Ваш вибір: ");
         String choice = scanner.nextLine();
 

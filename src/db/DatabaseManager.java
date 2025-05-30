@@ -1,4 +1,3 @@
-// Файл: db/DatabaseManager.java
 package db;
 
 import airline.*;
@@ -8,13 +7,23 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages SQLite database operations related to the Plane entities.
+ * Handles creation, insertion, update, deletion, and retrieval of plane data.
+ */
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:airline.db";
 
+    /**
+     * Constructs a DatabaseManager and ensures the required table exists.
+     */
     public DatabaseManager() {
         createTableIfNotExists();
     }
 
+    /**
+     * Creates the "planes" table if it does not already exist in the database.
+     */
     private void createTableIfNotExists() {
         String sql = """
             CREATE TABLE IF NOT EXISTS planes (
@@ -39,6 +48,12 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Establishes a connection to the SQLite database.
+     *
+     * @return the established SQL Connection
+     * @throws SQLException if connection fails
+     */
     private Connection connect() throws SQLException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -48,6 +63,11 @@ public class DatabaseManager {
         return DriverManager.getConnection(DB_URL);
     }
 
+    /**
+     * Inserts a new plane into the database.
+     *
+     * @param plane the plane to be added
+     */
     public void addPlane(Plane plane) {
         String sql = """
             INSERT INTO planes (type, model, capacity, cargo_capacity, range_km, 
@@ -75,6 +95,11 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Updates an existing plane's data in the database.
+     *
+     * @param plane the plane with updated information
+     */
     public void updatePlane(Plane plane) {
         String sql = """
             UPDATE planes SET
@@ -104,6 +129,12 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Deletes a plane from the database using its ID.
+     *
+     * @param id the unique ID of the plane
+     * @return true if deletion was successful, false otherwise
+     */
     public boolean deletePlane(int id) {
         String sql = "DELETE FROM planes WHERE id = ?;";
         try (Connection conn = connect();
@@ -118,6 +149,11 @@ public class DatabaseManager {
     }
 
 
+    /**
+     * Retrieves all planes stored in the database.
+     *
+     * @return a list of all Plane objects from the database
+     */
     public List<Plane> getAllPlanes() {
         List<Plane> list = new ArrayList<>();
         String sql = "SELECT * FROM planes;";
