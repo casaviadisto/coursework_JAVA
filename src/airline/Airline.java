@@ -36,8 +36,8 @@ public class Airline {
         return planes;
     }
 
-    public boolean removePlane(String model) {
-        return planes.removeIf(p -> p.getModel().equalsIgnoreCase(model));
+    public boolean removePlane(Integer planeId) {
+        return planes.removeIf(p -> p.getId() == planeId);
     }
 
     public Plane findPlaneByModel(String model) {

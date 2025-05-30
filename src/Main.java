@@ -29,10 +29,12 @@
 //    }
 //}
 
-import ui.AirlineCLI;
+//import ui.AirlineCLI;
+import ui.AirlineAppGUI;
 
 public class Main {
     public static void main(String[] args) {
-        new AirlineCLI().run();
+//        new AirlineCLI().run();
+        new AirlineAppGUI();
     }
 }

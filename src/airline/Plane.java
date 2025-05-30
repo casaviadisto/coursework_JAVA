@@ -1,12 +1,39 @@
+// Файл: airline/Plane.java
 package airline;
 
 public abstract class Plane {
+    private int id;
     protected String model;
     protected int capacity;
     protected double cargoCapacity;
     protected int range;
     protected double fuelConsumption;
+    protected double cruisingSpeed;
+    protected double maxSpeed;
+    protected int serviceCeiling;
     protected String imagePath;
+    protected String type;
+
+    public Plane(String model, int capacity, double cargoCapacity, int range,
+                 double fuelConsumption, double cruisingSpeed, double maxSpeed,
+                 int serviceCeiling) {
+        this.model = model;
+        this.capacity = capacity;
+        this.cargoCapacity = cargoCapacity;
+        this.range = range;
+        this.fuelConsumption = fuelConsumption;
+        this.cruisingSpeed = cruisingSpeed;
+        this.maxSpeed = maxSpeed;
+        this.serviceCeiling = serviceCeiling;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public void setModel(String model) {
         this.model = model;
@@ -28,12 +55,28 @@ public abstract class Plane {
         this.fuelConsumption = fuelConsumption;
     }
 
-    public Plane(String model, int capacity, double cargoCapacity, int range, double fuelConsumption) {
-        this.model = model;
-        this.capacity = capacity;
-        this.cargoCapacity = cargoCapacity;
-        this.range = range;
-        this.fuelConsumption = fuelConsumption;
+    public double getCruisingSpeed() {
+        return cruisingSpeed;
+    }
+
+    public void setCruisingSpeed(double cruisingSpeed) {
+        this.cruisingSpeed = cruisingSpeed;
+    }
+
+    public double getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    public void setMaxSpeed(double maxSpeed) {
+        this.maxSpeed = maxSpeed;
+    }
+
+    public int getServiceCeiling() {
+        return serviceCeiling;
+    }
+
+    public void setServiceCeiling(int serviceCeiling) {
+        this.serviceCeiling = serviceCeiling;
     }
 
     public String getModel() {
@@ -64,15 +107,24 @@ public abstract class Plane {
         this.imagePath = imagePath;
     }
 
-    public abstract String getType();
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     @Override
     public String toString() {
         return "[" + getType() + "] " + model +
-                " | Passengers: " + capacity +
-                ", Cargo: " + cargoCapacity + " tons" +
-                ", Range: " + range + " km" +
-                ", Fuel: " + fuelConsumption + " l/h" +
-                ", Image: " + imagePath;
+                " | Пасажири: " + capacity +
+                ", Вантаж: " + cargoCapacity + " т" +
+                ", Дальність: " + range + " км" +
+                ", Пальне: " + fuelConsumption + " л/год" +
+                ", Крейс. швидк.: " + cruisingSpeed + " км/год" +
+                ", Макс. швидк.: " + maxSpeed + " км/год" +
+                ", Стеля: " + serviceCeiling + " м" +
+                ", Зображення: " + imagePath;
     }
 }

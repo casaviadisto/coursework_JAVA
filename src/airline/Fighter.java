@@ -1,8 +1,9 @@
 package airline;
 
 public class Fighter extends Plane {
-    public Fighter(String model, double cargoCapacity, int range, double fuelConsumption) {
-        super(model, 1, cargoCapacity, range, fuelConsumption);
+    public Fighter(String model, double cargoCapacity, int range, double fuelConsumption,
+                   double cruisingSpeed, double maxSpeed, int serviceCeiling) {
+        super(model, 0, cargoCapacity, range, fuelConsumption, cruisingSpeed, maxSpeed, serviceCeiling);
     }
 
     @Override

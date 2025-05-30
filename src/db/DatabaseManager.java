@@ -1,3 +1,4 @@
+// Файл: db/DatabaseManager.java
 package db;
 
 import airline.*;
@@ -24,6 +25,9 @@ public class DatabaseManager {
                 cargo_capacity REAL,
                 range_km INTEGER,
                 fuel_consumption REAL,
+                cruising_speed REAL,
+                max_speed REAL,
+                service_ceiling INTEGER,
                 image_path TEXT
             );
         """;
@@ -44,11 +48,12 @@ public class DatabaseManager {
         return DriverManager.getConnection(DB_URL);
     }
 
-
     public void addPlane(Plane plane) {
         String sql = """
-            INSERT INTO planes (type, model, capacity, cargo_capacity, range_km, fuel_consumption, image_path)
-            VALUES (?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO planes (type, model, capacity, cargo_capacity, range_km, 
+                                fuel_consumption, cruising_speed, max_speed, 
+                                service_ceiling, image_path)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """;
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -59,7 +64,10 @@ public class DatabaseManager {
             pstmt.setDouble(4, plane.getCargoCapacity());
             pstmt.setInt(5, plane.getRange());
             pstmt.setDouble(6, plane.getFuelConsumption());
-            pstmt.setString(7, plane.getImagePath());
+            pstmt.setDouble(7, plane.getCruisingSpeed());
+            pstmt.setDouble(8, plane.getMaxSpeed());
+            pstmt.setInt(9, plane.getServiceCeiling());
+            pstmt.setString(10, plane.getImagePath());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -70,20 +78,25 @@ public class DatabaseManager {
     public void updatePlane(Plane plane) {
         String sql = """
             UPDATE planes SET
-                type = ?, capacity = ?, cargo_capacity = ?, range_km = ?,
-                fuel_consumption = ?, image_path = ?
-            WHERE model = ?;
+                type = ?, model = ?, capacity = ?, cargo_capacity = ?, range_km = ?,
+                fuel_consumption = ?, cruising_speed = ?, max_speed = ?,
+                service_ceiling = ?, image_path = ?
+            WHERE id = ?;
         """;
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, plane.getType());
-            pstmt.setInt(2, plane.getCapacity());
-            pstmt.setDouble(3, plane.getCargoCapacity());
-            pstmt.setInt(4, plane.getRange());
-            pstmt.setDouble(5, plane.getFuelConsumption());
-            pstmt.setString(6, plane.getImagePath());
-            pstmt.setString(7, plane.getModel());
+            pstmt.setString(2, plane.getModel());
+            pstmt.setInt(3, plane.getCapacity());
+            pstmt.setDouble(4, plane.getCargoCapacity());
+            pstmt.setInt(5, plane.getRange());
+            pstmt.setDouble(6, plane.getFuelConsumption());
+            pstmt.setDouble(7, plane.getCruisingSpeed());
+            pstmt.setDouble(8, plane.getMaxSpeed());
+            pstmt.setInt(9, plane.getServiceCeiling());
+            pstmt.setString(10, plane.getImagePath());
+            pstmt.setInt(11, plane.getId());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -91,11 +104,11 @@ public class DatabaseManager {
         }
     }
 
-    public void deletePlane(String model) {
-        String sql = "DELETE FROM planes WHERE model = ?;";
+    public void deletePlane(int id) {
+        String sql = "DELETE FROM planes WHERE id = ?;";
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, model);
+            pstmt.setInt(1, id);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Помилка при видаленні літака: " + e.getMessage());
@@ -110,18 +123,30 @@ public class DatabaseManager {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
+                int id = rs.getInt("id");
                 String type = rs.getString("type");
                 String model = rs.getString("model");
                 int capacity = rs.getInt("capacity");
                 double cargo = rs.getDouble("cargo_capacity");
                 int range = rs.getInt("range_km");
                 double fuel = rs.getDouble("fuel_consumption");
+                double cruisingSpeed = rs.getDouble("cruising_speed");
+                double maxSpeed = rs.getDouble("max_speed");
+                int serviceCeiling = rs.getInt("service_ceiling");
                 String image = rs.getString("image_path");
 
-                System.out.println("Зчитано з бази:");
-                System.out.println(model + " | " + type + " | " + capacity + " пасажирів");
-
-                Plane p = PlaneFactory.createPlane(type, model, capacity, cargo, range, fuel);
+                Plane p = PlaneFactory.createPlane(
+                        type,
+                        model,
+                        capacity,
+                        cargo,
+                        range,
+                        fuel,
+                        cruisingSpeed,
+                        maxSpeed,
+                        serviceCeiling
+                );
+                p.setId(id);
                 p.setImagePath(image);
                 list.add(p);
             }
