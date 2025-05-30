@@ -7,6 +7,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -33,6 +34,11 @@ public class AirlineAppGUI extends Application {
     private final FlowPane planeTiles = new FlowPane(10, 10);
     private final VBox filtersBox = new VBox(10);
 
+    private final HBox summaryBar = new HBox(20);
+    private final Label totalPlanesLabel = new Label();
+    private final Label totalCargoLabel = new Label();
+    private final Label totalPassengersLabel = new Label();
+
     private TextField searchField;
     private TextField minCapField, maxCapField;
     private TextField minCargoField, maxCargoField;
@@ -47,6 +53,10 @@ public class AirlineAppGUI extends Application {
 
     private boolean updatingMinMax = false;
 
+    private int filteredTotalPlanes = 0;
+    private int filteredTotalPassengers = 0;
+    private double filteredTotalCargo = 0.0;
+
     /**
      * The main entry point for the JavaFX application.
      * Initializes the application, loads planes from the database, and sets up the UI.
@@ -56,6 +66,7 @@ public class AirlineAppGUI extends Application {
     @Override
     public void start(Stage primaryStage) {
         setupFilterPanel();
+        setupSummaryBar();
         updatePlaneTiles();
 
         planeTiles.setPadding(new Insets(10));
@@ -70,10 +81,11 @@ public class AirlineAppGUI extends Application {
         centerScroll.setFitToWidth(true);
 
         BorderPane root = new BorderPane();
+        root.setTop(summaryBar);
         root.setCenter(centerScroll);
         root.setRight(filtersScroll);
 
-        Scene scene = new Scene(root, 1300, 600);
+        Scene scene = new Scene(root, 1300, 650); // Increased height to 650
         primaryStage.setTitle("Авіакомпанія — GUI");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -82,6 +94,34 @@ public class AirlineAppGUI extends Application {
             double width = newVal.doubleValue();
             planeTiles.setPrefWrapLength(width - filtersBox.getPrefWidth() - 50);
         });
+    }
+
+    /**
+     * Sets up the summary bar at the top of the window.
+     */
+    private void setupSummaryBar() {
+        summaryBar.setPadding(new Insets(10));
+        summaryBar.setStyle("-fx-border-width: 0 0 1 0;");
+        summaryBar.setAlignment(Pos.CENTER);
+        summaryBar.setMinHeight(40); // Ensure consistent height
+
+        // Style the labels
+        String labelStyle = "-fx-font-weight: bold; -fx-font-size: 14;";
+        totalPlanesLabel.setStyle(labelStyle);
+        totalCargoLabel.setStyle(labelStyle);
+        totalPassengersLabel.setStyle(labelStyle);
+
+        summaryBar.getChildren().addAll(totalPlanesLabel, totalCargoLabel, totalPassengersLabel);
+        updateSummaryBar();
+    }
+
+    /**
+     * Updates the summary bar with current totals.
+     */
+    private void updateSummaryBar() {
+        totalPlanesLabel.setText("Літаків: " + filteredTotalPlanes);
+        totalPassengersLabel.setText("Пасажирів: " + filteredTotalPassengers);
+        totalCargoLabel.setText("Вантажопідйомність: " + String.format("%.1f т", filteredTotalCargo));
     }
 
     /**
@@ -465,9 +505,12 @@ public class AirlineAppGUI extends Application {
             Button deleteBtn = new Button("🗑 Видалити");
             editBtn.setOnAction(e -> showEditDialog(plane));
             deleteBtn.setOnAction(e -> {
-                airline.removePlane(plane.getId());
-                updateMinMaxFields();
-                updatePlaneTiles();
+                if (airline.removePlane(plane.getId())) {
+                    updateMinMaxFields();
+                    updatePlaneTiles();
+                } else {
+                    showError("Не вдалося видалити літак.");
+                }
             });
 
             card.getChildren().add(new HBox(5, editBtn, deleteBtn));
@@ -478,6 +521,11 @@ public class AirlineAppGUI extends Application {
         addButton.setMinSize(140, 100);
         addButton.setOnAction(e -> showAddDialog());
         planeTiles.getChildren().add(addButton);
+
+        filteredTotalPlanes = planes.size();
+        filteredTotalPassengers = planes.stream().mapToInt(Plane::getCapacity).sum();
+        filteredTotalCargo = planes.stream().mapToDouble(Plane::getCargoCapacity).sum();
+        updateSummaryBar();
     }
 
     /**
