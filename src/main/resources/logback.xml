@@ -1,7 +1,8 @@
 <configuration>
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
     <!-- Логування у файл "logs/airline.log" -->
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/airline.log</file>
+        <file>./logs/airline.log</file>
         <append>true</append>
         <encoder>
             <pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>

@@ -27,8 +27,10 @@ public class DatabaseManager {
      */
     public DatabaseManager() {
         this.dbUrl = DEFAULT_DB_URL;
+        logger.info("DatabaseManager CONSTRUCTOR LOG: initialization with dbUrl = {}", dbUrl);
         createTableIfNotExists();
     }
+
 
     /**
      * Constructs a DatabaseManager with a custom database URL (e.g., for testing).

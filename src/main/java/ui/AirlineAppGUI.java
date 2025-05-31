@@ -23,12 +23,17 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The main GUI application for managing an airline's fleet of planes.
  * This application allows users to view, filter, sort, add, edit, and delete planes.
  * It also provides image viewing capabilities for each plane.
  */
 public class AirlineAppGUI extends Application {
+
+    private static final Logger logger = LoggerFactory.getLogger(AirlineAppGUI.class);
 
     private final Airline airline = new Airline(new DatabaseManager());
     private final FlowPane planeTiles = new FlowPane(10, 10);
@@ -710,6 +715,7 @@ public class AirlineAppGUI extends Application {
      * The main method to launch the application.
      */
     public static void main(String[] args) {
+        logger.info("==== Запуск AirlineAppGUI ====");
         launch(args);
     }
 }
