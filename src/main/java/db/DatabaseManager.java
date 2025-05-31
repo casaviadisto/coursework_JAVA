@@ -12,7 +12,7 @@ import java.util.List;
  * Handles creation, insertion, update, deletion, and retrieval of plane data.
  */
 public class DatabaseManager {
-    private static final String DB_URL = "jdbc:sqlite:airline.db";
+    private static final String DB_URL = "jdbc:sqlite:src/main/resources/airline.db";
 
     /**
      * Constructs a DatabaseManager and ensures the required table exists.
