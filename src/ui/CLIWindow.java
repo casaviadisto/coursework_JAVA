@@ -73,6 +73,9 @@ public class CLIWindow {
             return;
         }
 
+        // Make inputField initially disabled (will be enabled by first CLI output)
+        inputField.setDisable(true);
+
         // Redirect CLI output to the GUI TextArea
         PrintStream printOut = new PrintStream(new OutputStream() {
             private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -82,7 +85,11 @@ public class CLIWindow {
                 buffer.write(b);
                 if (b == '\n') {
                     String text = buffer.toString(StandardCharsets.UTF_8);
-                    Platform.runLater(() -> logArea.appendText(text));
+                    Platform.runLater(() -> {
+                        logArea.appendText(text);
+                        inputField.setDisable(false); // unblock after output
+                        inputField.requestFocus(); // set focus to right place
+                    });
                     buffer.reset();
                 }
             }
@@ -102,12 +109,18 @@ public class CLIWindow {
 
         // Send user input to the CLI when Enter is pressed
         inputField.setOnAction(e -> {
+            if (inputField.isDisabled()) {
+                // block if it's not time yet
+                return;
+            }
             String cmd = inputField.getText();
+            inputField.setDisable(true); // block until next output
             try {
                 pipedOut.write((cmd + "\n").getBytes(StandardCharsets.UTF_8));
                 pipedOut.flush();
             } catch (IOException ex) {
                 logArea.appendText("Помилка відправки команди\n");
+                inputField.setDisable(false); // if error - unblock
             }
             inputField.clear();
         });

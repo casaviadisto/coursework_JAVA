@@ -36,6 +36,7 @@ public class AirlineCLI {
         while (running) {
             printMenu();
             String input = scanner.nextLine();
+            printOut.println(input);
             switch (input) {
                 case "1" -> addPlane();
                 case "2" -> removePlane();
@@ -113,6 +114,7 @@ public class AirlineCLI {
             }
             printOut.print("Виберіть тип літака (введіть номер): ");
             int typeIndex = Integer.parseInt(scanner.nextLine()) - 1;
+            printOut.println(typeIndex + 1);
             if (typeIndex < 0 || typeIndex >= availableTypes.size()) {
                 printOut.println("❌ Невірний вибір типу.");
                 return;
@@ -121,27 +123,35 @@ public class AirlineCLI {
 
             printOut.print("Модель: ");
             String model = scanner.nextLine();
+            printOut.println(model);
 
             printOut.print("Кількість пасажирів: ");
             int capacity = Integer.parseInt(scanner.nextLine());
+            printOut.println(capacity);
 
             printOut.print("Вантажопідйомність (тонн): ");
             double cargoCapacity = Double.parseDouble(scanner.nextLine());
+            printOut.println(cargoCapacity);
 
             printOut.print("Дальність польоту (км): ");
             int range = Integer.parseInt(scanner.nextLine());
+            printOut.println(range);
 
             printOut.print("Споживання пального (л/год): ");
             double fuel = Double.parseDouble(scanner.nextLine());
+            printOut.println(fuel);
 
             printOut.print("Крейсерська швидкість (км/год): ");
             double cruisingSpeed = Double.parseDouble(scanner.nextLine());
+            printOut.println(cruisingSpeed);
 
             printOut.print("Максимальна швидкість (км/год): ");
             double maxSpeed = Double.parseDouble(scanner.nextLine());
+            printOut.println(maxSpeed);
 
             printOut.print("Стеля польоту (м): ");
             int serviceCeiling = Integer.parseInt(scanner.nextLine());
+            printOut.println(serviceCeiling);
 
             Plane plane = PlaneFactory.createPlane(
                     type.toLowerCase(),
@@ -170,6 +180,7 @@ public class AirlineCLI {
     private void removePlane() {
         printOut.print("Введіть назву (модель) літака для видалення: ");
         String model = scanner.nextLine().trim();
+        printOut.println(model);
         Integer id = airline.getPlaneIdByModel(model);
         if (id == null) {
             printOut.println("❌ Літак не знайдено.");
@@ -180,6 +191,7 @@ public class AirlineCLI {
         printPlaneTable(Collections.singletonList(found));
         printOut.print("Підтвердити видалення (y/n)? ");
         String confirm = scanner.nextLine();
+        printOut.println(confirm);
         if (confirm.equalsIgnoreCase("y")) {
             boolean ok = airline.removePlane(id);
             if (ok) printOut.println("✅ Видалено.");
@@ -197,6 +209,7 @@ public class AirlineCLI {
         try {
             printOut.print("Введіть модель літака для редагування: ");
             String model = scanner.nextLine();
+            printOut.println(model);
             Integer id = airline.getPlaneIdByModel(model);
 
             if (id == null) {
@@ -211,48 +224,56 @@ public class AirlineCLI {
 
             printOut.print("Модель [" + plane.getModel() + "]: ");
             String newModel = scanner.nextLine();
+            printOut.println(newModel);
             if (!newModel.isEmpty()) {
                 plane.setModel(newModel);
             }
 
             printOut.print("Кількість пасажирів [" + plane.getCapacity() + "]: ");
             String capInput = scanner.nextLine();
+            printOut.println(capInput);
             if (!capInput.isEmpty()) {
                 plane.setCapacity(Integer.parseInt(capInput));
             }
 
             printOut.print("Вантажопідйомність (тонн) [" + plane.getCargoCapacity() + "]: ");
             String cargoInput = scanner.nextLine();
+            printOut.println(cargoInput);
             if (!cargoInput.isEmpty()) {
                 plane.setCargoCapacity(Double.parseDouble(cargoInput));
             }
 
             printOut.print("Дальність польоту (км) [" + plane.getRange() + "]: ");
             String rangeInput = scanner.nextLine();
+            printOut.println(rangeInput);
             if (!rangeInput.isEmpty()) {
                 plane.setRange(Integer.parseInt(rangeInput));
             }
 
             printOut.print("Споживання пального (л/год) [" + plane.getFuelConsumption() + "]: ");
             String fuelInput = scanner.nextLine();
+            printOut.println(fuelInput);
             if (!fuelInput.isEmpty()) {
                 plane.setFuelConsumption(Double.parseDouble(fuelInput));
             }
 
             printOut.print("Крейсерська швидкість (км/год) [" + plane.getCruisingSpeed() + "]: ");
             String cruisingInput = scanner.nextLine();
+            printOut.println(cruisingInput);
             if (!cruisingInput.isEmpty()) {
                 plane.setCruisingSpeed(Double.parseDouble(cruisingInput));
             }
 
             printOut.print("Максимальна швидкість (км/год) [" + plane.getMaxSpeed() + "]: ");
             String maxSpeedInput = scanner.nextLine();
+            printOut.println(maxSpeedInput);
             if (!maxSpeedInput.isEmpty()) {
                 plane.setMaxSpeed(Double.parseDouble(maxSpeedInput));
             }
 
             printOut.print("Стеля польоту (м) [" + plane.getServiceCeiling() + "]: ");
             String ceilingInput = scanner.nextLine();
+            printOut.println(ceilingInput);
             if (!ceilingInput.isEmpty()) {
                 plane.setServiceCeiling(Integer.parseInt(ceilingInput));
             }
@@ -283,6 +304,7 @@ public class AirlineCLI {
                 """);
         printOut.print("Виберіть тип пошуку: ");
         String choice = scanner.nextLine();
+        printOut.println(choice);
         if (choice.equals("1")) {
             simpleSearch();
         } else if (choice.equals("2")) {
@@ -298,6 +320,7 @@ public class AirlineCLI {
     private void simpleSearch() {
         printOut.print("Введіть частину назви для пошуку: ");
         String keyword = scanner.nextLine().toLowerCase();
+        printOut.println(keyword);
 
         List<Plane> found = airline.getPlanes().stream()
                 .filter(p -> p.getModel().toLowerCase().contains(keyword))
@@ -321,48 +344,63 @@ public class AirlineCLI {
 
             printOut.print("Частина моделі (або залиште порожнім): ");
             String keyword = scanner.nextLine().trim().toLowerCase();
+            printOut.println(keyword);
 
             printOut.print("Мін. пасажирів (або -1): ");
             int minCap = Integer.parseInt(scanner.nextLine());
+            printOut.println(minCap);
 
             printOut.print("Макс. пасажирів (або -1): ");
             int maxCap = Integer.parseInt(scanner.nextLine());
+            printOut.println(maxCap);
 
             printOut.print("Мін. вантажопідйомність (або -1): ");
             double minCargo = Double.parseDouble(scanner.nextLine());
+            printOut.println(minCargo);
 
             printOut.print("Макс. вантажопідйомність (або -1): ");
             double maxCargo = Double.parseDouble(scanner.nextLine());
+            printOut.println(maxCargo);
 
             printOut.print("Мін. дальність (або -1): ");
             int minRange = Integer.parseInt(scanner.nextLine());
+            printOut.println(minRange);
 
             printOut.print("Макс. дальність (або -1): ");
             int maxRange = Integer.parseInt(scanner.nextLine());
+            printOut.println(maxRange);
 
             printOut.print("Мін. споживання пального (або -1): ");
             double minFuel = Double.parseDouble(scanner.nextLine());
+            printOut.println(minFuel);
 
             printOut.print("Макс. споживання пального (або -1): ");
             double maxFuel = Double.parseDouble(scanner.nextLine());
+            printOut.println(maxFuel);
 
             printOut.print("Мін. крейсерська швидкість (або -1): ");
             double minCruisingSpeed = Double.parseDouble(scanner.nextLine());
+            printOut.println(minCruisingSpeed);
 
             printOut.print("Макс. крейсерська швидкість (або -1): ");
             double maxCruisingSpeed = Double.parseDouble(scanner.nextLine());
+            printOut.println(maxCruisingSpeed);
 
             printOut.print("Мін. максимальна швидкість (або -1): ");
             double minMaxSpeed = Double.parseDouble(scanner.nextLine());
+            printOut.println(minMaxSpeed);
 
             printOut.print("Макс. максимальна швидкість (або -1): ");
             double maxMaxSpeed = Double.parseDouble(scanner.nextLine());
+            printOut.println(maxMaxSpeed);
 
             printOut.print("Мін. стеля (або -1): ");
             int minCeiling = Integer.parseInt(scanner.nextLine());
+            printOut.println(minCeiling);
 
             printOut.print("Макс. стеля (або -1): ");
             int maxCeiling = Integer.parseInt(scanner.nextLine());
+            printOut.println(maxCeiling);
 
             List<String> availableTypes = PlaneFactory.getAvailableTypes();
             printOut.println("Виберіть типи літаків (через пробіл, або залиште порожнім для всіх):");
@@ -371,6 +409,7 @@ public class AirlineCLI {
             }
             printOut.print("Ваш вибір (наприклад: 1 3 6): ");
             String typesInput = scanner.nextLine().trim();
+            printOut.println(typesInput);
 
             final Set<String> selectedTypes = new HashSet<>();
 
@@ -437,12 +476,14 @@ public class AirlineCLI {
                 """);
         printOut.print("Ваш вибір: ");
         String choice = scanner.nextLine();
+        printOut.println(choice);
 
         printOut.println("Порядок сортування:");
         printOut.println("1. За зростанням");
         printOut.println("2. За спаданням");
         printOut.print("Ваш вибір: ");
         String orderChoice = scanner.nextLine();
+        printOut.println(orderChoice);
         boolean ascending = orderChoice.equals("1");
 
         List<Plane> sorted = new ArrayList<>(airline.getPlanes());
