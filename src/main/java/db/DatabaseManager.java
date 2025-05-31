@@ -12,12 +12,25 @@ import java.util.List;
  * Handles creation, insertion, update, deletion, and retrieval of plane data.
  */
 public class DatabaseManager {
-    private static final String DB_URL = "jdbc:sqlite:src/main/resources/airline.db";
+
+    // Default database URL (for main app)
+    private static final String DEFAULT_DB_URL = "jdbc:sqlite:src/main/resources/airline.db";
+    private final String dbUrl;
 
     /**
-     * Constructs a DatabaseManager and ensures the required table exists.
+     * Constructs a DatabaseManager and ensures the required table exists, using default DB URL.
      */
     public DatabaseManager() {
+        this.dbUrl = DEFAULT_DB_URL;
+        createTableIfNotExists();
+    }
+
+    /**
+     * Constructs a DatabaseManager with a custom database URL (e.g., for testing).
+     * @param dbUrl JDBC SQLite URL (e.g., "jdbc:sqlite:memory:" or file path)
+     */
+    public DatabaseManager(String dbUrl) {
+        this.dbUrl = dbUrl;
         createTableIfNotExists();
     }
 
@@ -60,7 +73,7 @@ public class DatabaseManager {
         } catch (ClassNotFoundException e) {
             System.err.println("Драйвер SQLite не знайдено: " + e.getMessage());
         }
-        return DriverManager.getConnection(DB_URL);
+        return DriverManager.getConnection(this.dbUrl);
     }
 
     /**
@@ -147,7 +160,6 @@ public class DatabaseManager {
             return false;
         }
     }
-
 
     /**
      * Retrieves all planes stored in the database.

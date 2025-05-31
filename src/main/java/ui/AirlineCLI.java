@@ -29,6 +29,19 @@ public class AirlineCLI {
     }
 
     /**
+     * Constructs a new AirlineCLI with the specified airline, scanner, and print stream.
+     *
+     * @param airline   the Airline instance to manage
+     * @param scanner   the Scanner for reading user input
+     * @param printOut  the PrintStream for writing output
+     */
+    public AirlineCLI(Airline airline, Scanner scanner, PrintStream printOut) {
+        this.airline = airline;
+        this.scanner = scanner;
+        this.printOut = printOut;
+    }
+
+    /**
      * Runs the main CLI loop, handling user input and executing commands.
      */
     public void run() {

@@ -164,13 +164,14 @@ public abstract class Plane {
                 "[%s] %s\n" +
                         "Пасажири: %d\n" +
                         "Вантаж: %.2f т\n" +
-                        "Дальність: %.2f км\n" +
+                        "Дальність: %d км\n" +
                         "Пальне: %.2f л/год\n" +
                         "Крейс. швидк.: %.2f км/год\n" +
                         "Макс. швидк.: %.2f км/год\n" +
-                        "Стеля: %.2f м\n" +
+                        "Стеля: %d м\n" +
                         "Зображення: %s",
                 getType(), model, capacity, cargoCapacity, range, fuelConsumption, cruisingSpeed, maxSpeed, serviceCeiling, imagePath
         );
     }
+
 }
