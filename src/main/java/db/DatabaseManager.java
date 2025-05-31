@@ -2,6 +2,8 @@ package db;
 
 import airline.*;
 import airline.util.PlaneFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,8 +12,11 @@ import java.util.List;
 /**
  * Manages SQLite database operations related to the Plane entities.
  * Handles creation, insertion, update, deletion, and retrieval of plane data.
+ * All major actions and exceptions are logged using SLF4J.
  */
 public class DatabaseManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
 
     // Default database URL (for main app)
     private static final String DEFAULT_DB_URL = "jdbc:sqlite:src/main/resources/airline.db";
@@ -36,6 +41,7 @@ public class DatabaseManager {
 
     /**
      * Creates the "planes" table if it does not already exist in the database.
+     * Logs any errors during table creation.
      */
     private void createTableIfNotExists() {
         String sql = """
@@ -56,8 +62,9 @@ public class DatabaseManager {
         try (Connection conn = connect();
              Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
+            logger.info("Checked/created 'planes' table in DB: {}", dbUrl);
         } catch (SQLException e) {
-            System.err.println("Помилка створення таблиці: " + e.getMessage());
+            logger.error("Error creating planes table in DB: {}", dbUrl, e);
         }
     }
 
@@ -71,13 +78,15 @@ public class DatabaseManager {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            System.err.println("Драйвер SQLite не знайдено: " + e.getMessage());
+            logger.error("SQLite JDBC driver not found.", e);
         }
-        return DriverManager.getConnection(this.dbUrl);
+        Connection conn = DriverManager.getConnection(this.dbUrl);
+        logger.debug("Established DB connection: {}", dbUrl);
+        return conn;
     }
 
     /**
-     * Inserts a new plane into the database.
+     * Inserts a new plane into the database and logs the operation.
      *
      * @param plane the plane to be added
      */
@@ -103,13 +112,14 @@ public class DatabaseManager {
             pstmt.setString(10, plane.getImagePath());
 
             pstmt.executeUpdate();
+            logger.info("Plane '{}' added to DB (type: {})", plane.getModel(), plane.getType());
         } catch (SQLException e) {
-            System.err.println("Помилка при додаванні літака: " + e.getMessage());
+            logger.error("Error adding plane '{}' to DB", plane.getModel(), e);
         }
     }
 
     /**
-     * Updates an existing plane's data in the database.
+     * Updates an existing plane's data in the database and logs the operation.
      *
      * @param plane the plane with updated information
      */
@@ -136,14 +146,19 @@ public class DatabaseManager {
             pstmt.setString(10, plane.getImagePath());
             pstmt.setInt(11, plane.getId());
 
-            pstmt.executeUpdate();
+            int affected = pstmt.executeUpdate();
+            if (affected > 0) {
+                logger.info("Plane '{}' (ID: {}) updated in DB", plane.getModel(), plane.getId());
+            } else {
+                logger.warn("Update attempted for non-existent plane ID: {}", plane.getId());
+            }
         } catch (SQLException e) {
-            System.err.println("Помилка при оновленні літака: " + e.getMessage());
+            logger.error("Error updating plane '{}' (ID: {}) in DB", plane.getModel(), plane.getId(), e);
         }
     }
 
     /**
-     * Deletes a plane from the database using its ID.
+     * Deletes a plane from the database using its ID and logs the operation.
      *
      * @param id the unique ID of the plane
      * @return true if deletion was successful, false otherwise
@@ -154,15 +169,21 @@ public class DatabaseManager {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             int affected = pstmt.executeUpdate();
-            return affected > 0;
+            if (affected > 0) {
+                logger.info("Plane with ID {} deleted from DB", id);
+                return true;
+            } else {
+                logger.warn("Delete attempted for non-existent plane ID: {}", id);
+                return false;
+            }
         } catch (SQLException e) {
-            System.err.println("Помилка при видаленні літака: " + e.getMessage());
+            logger.error("Error deleting plane with ID {} from DB", id, e);
             return false;
         }
     }
 
     /**
-     * Retrieves all planes stored in the database.
+     * Retrieves all planes stored in the database and logs the action.
      *
      * @return a list of all Plane objects from the database
      */
@@ -201,9 +222,9 @@ public class DatabaseManager {
                 p.setImagePath(image);
                 list.add(p);
             }
-
+            logger.info("Loaded {} planes from DB", list.size());
         } catch (SQLException e) {
-            System.err.println("Помилка при зчитуванні літаків: " + e.getMessage());
+            logger.error("Error reading planes from DB", e);
         }
         return list;
     }
