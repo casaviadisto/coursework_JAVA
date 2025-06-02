@@ -1,6 +1,7 @@
 package ui;
 
-import airline.*;
+import airline.Airline;
+import airline.Plane;
 import airline.util.PlaneFactory;
 import db.DatabaseManager;
 import javafx.application.Application;
@@ -18,9 +19,10 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.io.File;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -28,9 +30,14 @@ import java.util.function.UnaryOperator;
  * The main GUI application for managing an airline's fleet of planes.
  * <p>
  * This application allows users to view, filter, sort, add, edit, and delete planes.
- * Each plane can have an associated image stored inside the JAR under /images/.
- * When a plane's imagePath (e.g., "/images/A-10.jpg") is provided, this class
- * loads it as a resource from the classpath rather than from the file system.
+ * Each plane can have an associated image path stored in the database that may be:
+ *   - "/images/A-10.jpg"     (resource inside the JAR)
+ *   - "images/A-10.jpg"      (file in local "images" folder next to JAR)
+ *   - "src/main/resources/images/A-10.jpg" (legacy developer path)
+ * <br>
+ * The method {@link #loadImageView(String)} handles normalization:
+ * it first attempts to load the image from inside the JAR via classpath;
+ * if not found, it tries to read from the local file system relative to the working directory.
  * </p>
  */
 public class AirlineAppGUI extends Application {
@@ -367,7 +374,7 @@ public class AirlineAppGUI extends Application {
         Runnable filterAction = this::updatePlaneTiles;
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterAction.run());
 
-        // Numeric fields listeners
+        // Listeners for numeric fields
         minCapField.textProperty().addListener((obs, o, n) -> { if (!updatingMinMax) filterAction.run(); });
         maxCapField.textProperty().addListener((obs, o, n) -> { if (!updatingMinMax) filterAction.run(); });
         minCargoField.textProperty().addListener((obs, o, n) -> { if (!updatingMinMax) filterAction.run(); });
@@ -395,8 +402,10 @@ public class AirlineAppGUI extends Application {
     /**
      * Updates the display of plane tiles based on current filters and sorting criteria.
      * <p>
-     * Each tile includes a thumbnail loaded from the classpath (inside JAR) if the plane's
-     * imagePath is non-null. Clicking the thumbnail opens a larger, full-size view.
+     * Each tile includes a thumbnail loaded via {@link #loadImageView(String)}, which
+     * attempts to load from the JAR's "/images/" resource first; if not found there,
+     * it will load from the local file system under "images/" next to the JAR.
+     * Clicking the thumbnail opens a larger, full-size view.
      * </p>
      */
     private void updatePlaneTiles() {
@@ -456,13 +465,13 @@ public class AirlineAppGUI extends Application {
             card.setStyle("-fx-border-color: gray; -fx-border-radius: 5; -fx-background-color: #f9f9f9;");
 
             if (plane.getImagePath() != null && !plane.getImagePath().isBlank()) {
-                ImageView thumbnail = loadImageViewFromJar(plane.getImagePath());
+                ImageView thumbnail = loadImageView(plane.getImagePath());
                 thumbnail.setFitWidth(180);
                 thumbnail.setPreserveRatio(true);
 
                 thumbnail.setOnMouseClicked(e -> {
                     Stage imageStage = new Stage();
-                    ImageView fullImage = loadImageViewFromJar(plane.getImagePath());
+                    ImageView fullImage = loadImageView(plane.getImagePath());
                     fullImage.setPreserveRatio(true);
                     fullImage.setFitWidth(800);
                     StackPane pane = new StackPane(fullImage);
@@ -515,12 +524,12 @@ public class AirlineAppGUI extends Application {
     }
 
     /**
-     * Utilizes an input field's text to parse either Integer or Double.
-     * If the field is empty or parse fails, returns defaultValue.
+     * Parses the text from a TextField into Integer or Double.
+     * Returns defaultValue if the field is empty or parsing fails.
      *
      * @param field        the TextField containing numeric text
      * @param defaultValue the default value to return if parsing fails or empty
-     * @param <T>          Integer or Double
+     * @param <T>          either Integer or Double
      * @return parsed value or defaultValue
      */
     @SuppressWarnings("unchecked")
@@ -539,25 +548,52 @@ public class AirlineAppGUI extends Application {
     }
 
     /**
-     * Loads an ImageView from a resource path inside the JAR.
+     * Attempts to load an ImageView from the given imagePath.
      * <p>
-     * The provided imagePath should start with "/images/" (e.g., "/images/A-10.jpg").
-     * The method attempts to retrieve the resource from the classpath and
-     * returns an ImageView containing that image. If the resource is not found,
-     * an empty ImageView is returned.
+     * First normalizes the path to extract the filename after "images/".
+     * Then it tries to load from inside the JAR via getResourceAsStream("/images/<filename>").
+     * If not found in JAR, it treats "images/<filename>" as a local file path next to the JAR
+     * and attempts to load from the file system.
+     * If neither approach succeeds, returns an empty ImageView.
      * </p>
      *
-     * @param imagePath the path inside the JAR (e.g., "/images/A-10.jpg")
-     * @return ImageView containing the image, or empty ImageView if not found
+     * @param imagePath the potentially varied path (e.g., "/images/A-10.jpg", "images/A-10.jpg",
+     *                  or "src/main/resources/images/A-10.jpg")
+     * @return ImageView containing the image, or an empty ImageView if loading fails
      */
-    private ImageView loadImageViewFromJar(String imagePath) {
-        InputStream is = getClass().getResourceAsStream(imagePath);
-        if (is == null) {
-            System.err.println("Resource not found in JAR: " + imagePath);
-            return new ImageView();
+    private ImageView loadImageView(String imagePath) {
+        // Normalize to extract "images/filename.ext"
+        String normalized = imagePath;
+        if (normalized.contains("images/")) {
+            normalized = normalized.substring(normalized.indexOf("images/"));
         }
-        Image img = new Image(is);
-        return new ImageView(img);
+        // Ensure leading slash for resource lookup
+        String resourcePath = normalized.startsWith("/") ? normalized : "/" + normalized;
+
+        // 1) Try loading from JAR resource (inside classpath)
+        try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
+            if (is != null) {
+                Image img = new Image(is);
+                return new ImageView(img);
+            }
+        } catch (Exception ignored) {
+            // If anything goes wrong, we'll try file system next
+        }
+
+        // 2) If not found in JAR, attempt to load as local file: "images/filename.ext" (no leading slash)
+        try {
+            File localFile = new File(normalized);
+            if (localFile.exists()) {
+                Image img = new Image(new FileInputStream(localFile));
+                return new ImageView(img);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading local image: " + e.getMessage());
+        }
+
+        // 3) If still not found, return empty ImageView
+        System.err.println("Image not found (JAR or FS): " + imagePath);
+        return new ImageView();
     }
 
     /**
@@ -581,8 +617,9 @@ public class AirlineAppGUI extends Application {
      * creates a new plane; otherwise, it updates the existing plane.
      * <p>
      * Users can select an image file from the local file system, which will be copied
-     * to an "images" folder alongside the JAR at runtime. The stored imagePath will be
-     * prefixed with "/images/" to allow classpath loading once relocated into the JAR.
+     * into a folder named "images" next to the running JAR, and the stored imagePath
+     * is set to "/images/<filename>". On subsequent loads, that path will refer to the
+     * resource inside JAR if packaged, or to the local file if JAR does not contain it.
      * </p>
      *
      * @param editable the existing plane to edit, or null to create a new plane
@@ -641,7 +678,7 @@ public class AirlineAppGUI extends Application {
                         Files.copy(selectedFile.toPath(), destFile.toPath());
                     }
 
-                    // Store with leading slash for classpath loading: "/images/Name.jpg"
+                    // Store with leading slash for classpath loading: "/images/<filename>"
                     imagePathField.setText("/images/" + fileName);
 
                 } catch (Exception ex) {
@@ -705,8 +742,8 @@ public class AirlineAppGUI extends Application {
                     }
 
                     return plane;
-                } catch (Exception e) {
-                    showError("Input error: " + e.getMessage());
+                } catch (Exception e2) {
+                    showError("Input error: " + e2.getMessage());
                 }
             }
             return null;
