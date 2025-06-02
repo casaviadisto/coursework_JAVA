@@ -50,7 +50,13 @@ cid|name            |type   |notnull|dflt_value|pk|
  10|image_path      |TEXT   |      0|          | 0|
 ```
 ---
+## Use case діаграма
+![Use case діаграма](./preview/Use_Case_Diagram.png)
 
+## Class діагарама
+![Class діаграма](./preview/class_diagram.png)
+
+---
 ## ПРИКЛАДИ ІНТЕРФЕЙСУ
 
 ### Головний екран без фільтрів
