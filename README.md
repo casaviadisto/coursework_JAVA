@@ -88,7 +88,10 @@ cid|name            |type   |notnull|dflt_value|pk|
 ## [Презентація в форматі pdf](./preview/presentation.pdf)
 
 ---
+## Реліз
+Для завантаження програми скористайтесь [готовим бінарним кодом](https://github.com/casaviadisto/coursework_JAVA/releases/)
 
+---
 ## ЛІЦЕНЗІЯ
 
 Проект доступний за ліцензією MIT.
